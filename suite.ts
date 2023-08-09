@@ -46,6 +46,10 @@ export class Suite {
     this.log("connect to acala");
   }
 
+  async disconnect() {
+    await this.api.disconnect()
+  }
+
   async isReady() {
     return this.api.isReady;
   }
