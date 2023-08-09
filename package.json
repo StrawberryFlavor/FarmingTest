@@ -4,16 +4,19 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^16.0.3",
-    "ethers": "5.4.0",
     "@acala-network/api": "^4.1.8-6",
     "@acala-network/app-util": "^4.1.8-6",
+    "@acala-network/eth-providers": "^2.7.6",
     "@acala-network/sdk-core": "^4.1.8-6",
     "@acala-network/sdk-homa": "^4.1.8-6",
-    "@acala-network/sdk-swap": "^4.1.8-6"
+    "@acala-network/sdk-swap": "^4.1.8-6",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "ethers": "5.4.0"
   },
   "devDependencies": {
     "@polkadot/ts": "^0.3.59",
+    "@types/chai": "^4.3.5",
     "@types/jest": "^26.0.13",
     "@types/lodash": "^4.14.161",
     "jest": "^26.4.2",

@@ -11,4 +11,5 @@ export const LCDOT_13 = process.env.LCDOT_13
 export const HOMA = process.env.HOMA
 export const STABLE_ASSET = process.env.STABLE_ASSET
 export const ALICE = process.env.ALICE
+export const ALICE_ETH = process.env.ALICE_ETH
 export const LIQUID_CROWDLOAN = process.env.LIQUID_CROWDLOAN
