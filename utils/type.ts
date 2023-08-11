@@ -15,5 +15,5 @@ export enum ConvertType {
 
 export type ContractAddress = string;
 export type UserAddress = string;
-export type Amount = number|string|BigNumber
-export type BlockNumber = number|string
+export type Amount = number | string | BigNumber
+export type BlockNumber = number | string

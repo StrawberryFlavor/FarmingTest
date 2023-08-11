@@ -12,10 +12,10 @@ import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
         "https://crosschain-dev.polkawallet.io:9909"
     );
     const iStakingCall = new IStakingCall(provider)
-    let testAccount = (new Keyring({type: 'sr25519'})).addFromMnemonic(ACCOUNT as any)
+    let testAccount = (new Keyring({ type: 'sr25519' })).addFromMnemonic(ACCOUNT as any)
     let testAddress = testAccount.address
 
-    function callEVM(contractAddress: string, callData:string) {
+    function callEVM(contractAddress: string, callData: string) {
         return suite.api.tx.evm.call(
             contractAddress,
             callData,
@@ -31,13 +31,13 @@ import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
         await suite.send(account, callEVM(token, callData))
     }
 
-    async function callStake(poolId: number, amount: string, account:any) {
+    async function callStake(poolId: number, amount: string, account: any) {
         const callData = iStakingCall.stakeEncode(poolId, amount)
         await suite.send(account, callEVM(PROXYCONTRACT as any, callData))
 
     }
 
-    async function callAddPool(token: string, account: any){
+    async function callAddPool(token: string, account: any) {
         const callData = iStakingCall.addPoolEncode(token)
         await suite.send(account, callEVM(PROXYCONTRACT as any, callData))
     }
@@ -46,11 +46,11 @@ import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
     const amount = '1000000000000'
     await callApprove(LCDOT_13 as any, amount, testAccount)
     console.log('=== approve completed ===')
-// // await callAddPool(DOT)
+    // // await callAddPool(DOT)
     // await callStake(0, amount, testAccount)
     // console.log('=== stake completed ===')
 
     console.log('completed')
     await suite.disconnect()
-//     process.exit(0)
+    //     process.exit(0)
 })()
