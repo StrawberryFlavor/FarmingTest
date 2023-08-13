@@ -18,9 +18,9 @@ const homaABI = [
 
 const homaIface = new ethers.utils.Interface(homaABI);
 
-export class IHomaCall{
+export class IHomaCall {
     homaContract: ethers.Contract
-    constructor(provider: ethers.providers.JsonRpcProvider|ethers.Wallet) {
+    constructor(provider: ethers.providers.JsonRpcProvider | ethers.Wallet) {
         this.homaContract = new ethers.Contract(
             HOMA as string,
             homaABI,
@@ -33,8 +33,8 @@ export class IHomaCall{
      * @param blockTag 
      * @returns BigNumber
      */
-    async getCommissionRate(blockTag: BlockNumber="latest") {
-        return await this.homaContract.getCommissionRate({blockTag})
+    async getCommissionRate(blockTag: BlockNumber = "latest") {
+        return await this.homaContract.getCommissionRate({ blockTag })
     }
 
     /**
@@ -42,17 +42,8 @@ export class IHomaCall{
      * @param blockTag 
      * @returns BigNumber
      */
-    async getEstimatedRewardRate(blockTag: BlockNumber="latest") {
-        return await this.homaContract.getEstimatedRewardRate({blockTag})
-    }
-    
-    /**
-     * 
-     * @param blockTag 
-     * @returns BigNumber
-     */
-    async getExchangeRate(blockTag: BlockNumber="latest") {
-        return await this.homaContract.getExchangeRate({blockTag})
+    async getEstimatedRewardRate(blockTag: BlockNumber = "latest") {
+        return await this.homaContract.getEstimatedRewardRate({ blockTag })
     }
 
     /**
@@ -60,8 +51,17 @@ export class IHomaCall{
      * @param blockTag 
      * @returns BigNumber
      */
-    async getFastMatchFee(blockTag: BlockNumber="latest") {
-        return await this.homaContract.getFastMatchFee({blockTag})
+    async getExchangeRate(blockTag: BlockNumber = "latest") {
+        return await this.homaContract.getExchangeRate({ blockTag })
+    }
+
+    /**
+     * 
+     * @param blockTag 
+     * @returns BigNumber
+     */
+    async getFastMatchFee(blockTag: BlockNumber = "latest") {
+        return await this.homaContract.getFastMatchFee({ blockTag })
     }
 
     async mint(mintAmount: Amount) {
@@ -76,11 +76,11 @@ export class IHomaCall{
         return tx
     }
 
-    async mintEncode(mintAmount: Amount) {
+    mintEncode(mintAmount: Amount) {
         return homaIface.encodeFunctionData("mint", [mintAmount]);
     }
 
-    async requestRedeemEncode(redeemAmount: Amount, fastMatch: Boolean) {
+    requestRedeemEncode(redeemAmount: Amount, fastMatch: Boolean) {
         return homaIface.encodeFunctionData("requestRedeem", [redeemAmount, fastMatch]);
     }
 }

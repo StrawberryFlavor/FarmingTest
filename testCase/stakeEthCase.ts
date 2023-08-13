@@ -21,11 +21,11 @@ import { ConvertType } from "../utils/type";
     // console.log(await iStakingCall.convertInfos(poolId))
     // const block = 421277//await provider.getBlockNumber()//"latest"
     // console.log("当前区块高度为：", block);
-    
+
     // const tx = await iStakingCall.unstake(poolId, amount)// await iStakingCall.convertLSDPool(poolId, ConvertType.DOT2LDOT) // await iStakingCall.stake(poolId, amount)//await iStakingCall.addPool(DOT)
     // await tx.wait()
     // console.log(tx);
-    
+
     const shareType = await iStakingCall.shareTypes(poolId);
     const convertInfo = await iStakingCall.convertInfos(poolId)
     const iLiquidCrowdloan = new ILiquidCrowdloanCall(AliceSigner)
@@ -56,7 +56,7 @@ import { ConvertType } from "../utils/type";
     // console.log("rewardPerShare", (await iStakingCall.rewardPerShare(poolId, ACA as string, block)).toString())
     // console.log("lastTimeRewardApplicable", (await iStakingCall.lastTimeRewardApplicable(poolId, ACA as string), block).toString())
     // console.log("rewardsDeductionRates", rewardsDeductionRates.toString());
-    
+
 
     console.log("=============================================================");
     console.log("PoolIndex", (await iStakingCall.PoolIndex()).toString())
@@ -70,7 +70,7 @@ import { ConvertType } from "../utils/type";
     console.log('rewardTypes: ', rewardTypes);
     // console.log('rewardsDeductionRates: ', rewardsDeductionRates.toString());
     console.log("=============================================================");
-    
+
     // const acaContract = new ethers.Contract(ACA as string, erc20ABI, AliceSigner)
     // const acaCall = new IERC20Call(acaContract)
     // console.log((await acaCall.balanceOf(AliceSigner.address, 421176)).toString())

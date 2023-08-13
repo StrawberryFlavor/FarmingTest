@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { UserAddress, ContractAddress, Amount, BlockNumber } from "../utils/type";
-import { PROXYCONTRACT } from "../utils/config";
 
 // ERC-20代币合约ABI的字符串表示
 export const erc20ABI = [
@@ -25,7 +24,7 @@ const erc20Iface = new ethers.utils.Interface(erc20ABI);
 
 export class IERC20Call {
     erc20Contract: ethers.Contract
-    constructor(contractAddress: ContractAddress, provider: ethers.providers.JsonRpcProvider|ethers.Wallet) {
+    constructor(contractAddress: ContractAddress, provider: ethers.providers.JsonRpcProvider | ethers.Wallet) {
         this.erc20Contract = new ethers.Contract(
             contractAddress,
             erc20ABI,
@@ -45,12 +44,12 @@ export class IERC20Call {
         return await this.erc20Contract.name()
     }
 
-    async totalSupply(blockTag: BlockNumber="latest") {
-        return await this.erc20Contract.totalSupply({blockTag})
+    async totalSupply(blockTag: BlockNumber = "latest") {
+        return await this.erc20Contract.totalSupply({ blockTag })
     }
 
-    async balanceOf(who: UserAddress, blockTag: BlockNumber="latest") {
-        return await this.erc20Contract.balanceOf(who, {blockTag})
+    async balanceOf(who: UserAddress, blockTag: BlockNumber = "latest") {
+        return await this.erc20Contract.balanceOf(who, { blockTag })
     }
 
     async transfer(who: UserAddress, amount: Amount) {
