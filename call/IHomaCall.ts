@@ -47,7 +47,7 @@ export class IHomaCall {
     }
 
     /**
-     * 
+     * 获取汇率
      * @param blockTag 
      * @returns BigNumber
      */

@@ -1,87 +1,274 @@
 import { ethers } from "ethers";
 import { AcalaJsonRpcProvider } from "@acala-network/eth-providers";
-import { ACCOUNT, PROXYCONTRACT, ACA, DOT, LDOT, SA_DOT, LCDOT_13, HOMA, STABLE_ASSET, ALICE, ALICE_ETH, LIQUID_CROWDLOAN } from "../utils/config";
+import { ACCOUNT, PROXYCONTRACT, ACA, DOT, LDOT, SA_DOT, LCDOT_13, HOMA, STABLE_ASSET, WTDOT, ALICE, ALICE_ETH, TEST_ACCOUNT, LIQUID_CROWDLOAN, MAX_UINT_AMOUNT } from "../utils/config";
 import UpgradeableStakingLSDABI from '../UpgradeableStakingLSD.json'
-import { expect } from 'chai'
+import { expect, use } from 'chai'
 import { IStakingCall } from '../call/IStakingCall'
 import { ILiquidCrowdloanCall } from '../call/ILiquidCrowdloanCall'
 import { IHomaCall } from "../call/IHomaCall";
-import { ConvertType } from "../utils/type";
+import { IWrappedTDOTCall } from "../call/IWrappedTDOT";
+import { BlockNumber, ConvertType, Operation, UserAddress } from "../utils/type";
+import { IERC20Call, erc20ABI } from "../call/IERC20Call";
+import { solidity } from "ethereum-waffle";
+import { formatUnits } from "ethers/lib/utils";
+
+use(solidity);
 
 (async () => {
     const provider = new AcalaJsonRpcProvider(
         "https://crosschain-dev.polkawallet.io:9909"
     );
     const AliceSigner = new ethers.Wallet(ALICE_ETH as string, provider)
+    const TestAccountSinger = new ethers.Wallet(TEST_ACCOUNT as string, provider)
     const iStakingCall = new IStakingCall(AliceSigner)
+    const iACACall = new IERC20Call(ACA as string, AliceSigner)
+    const iDOTCall = new IERC20Call(DOT as string, AliceSigner)
+    const iLDOTCall = new IERC20Call(LDOT as string, AliceSigner)
+    const iSADOTCall = new IERC20Call(SA_DOT as string, AliceSigner)
+    const iLCDOTCall = new IERC20Call(LCDOT_13 as string, AliceSigner)
+    const iWTDOTCall = new IERC20Call(WTDOT as string, AliceSigner)
+    const iWrappedTDOTCall = new IWrappedTDOTCall(AliceSigner)
+    const iLiquidCrowdloanCall = new ILiquidCrowdloanCall(AliceSigner)
 
     console.log("owner", await iStakingCall.owner())
-    const poolId = 14
-    const amount = '1000000000000'
-    // console.log(await iStakingCall.convertInfos(poolId))
-    // const block = 421277//await provider.getBlockNumber()//"latest"
-    // console.log("当前区块高度为：", block);
+    // console.log(iStakingCall.unstakeEncode(18, '1000000000001'));
+    // console.log(await iStakingCall.pausedPoolOperations(18, Operation.Unstake))
+    
+    const poolId = 64 //Number((await iStakingCall.PoolIndex()).toString()) - 1
+    const amount = '100000000000'
 
-    // const tx = await iStakingCall.unstake(poolId, amount)// await iStakingCall.convertLSDPool(poolId, ConvertType.DOT2LDOT) // await iStakingCall.stake(poolId, amount)//await iStakingCall.addPool(DOT)
-    // await tx.wait()
-    // console.log(tx);
+    const getAllBalanceInfo = async (who: UserAddress, blockTag: BlockNumber = "latest") => {
+        console.log("------------start getAllBalanceInfo------------");
+        
+        const [
+            acaBalance,
+            acaDecimal,
+            dotBalance, 
+            dotDecimal,
+            ldotBalance,
+            ldotDecimal,
+            tdotBalance,
+            tdotDecimal,
+            lcdotBalance,
+            lcdotDecimal, 
+            wtdotBalance,
+            wtdotDecimal
+        ] = await Promise.all([
+            iACACall.balanceOf(who, blockTag),
+            iACACall.decimals(),
+            iDOTCall.balanceOf(who, blockTag),
+            iDOTCall.decimals(),
+            iLDOTCall.balanceOf(who, blockTag),
+            iLDOTCall.decimals(),
+            iSADOTCall.balanceOf(who, blockTag), 
+            iSADOTCall.decimals(),
+            iLCDOTCall.balanceOf(who, blockTag),
+            iLCDOTCall.decimals(),
+            iWTDOTCall.balanceOf(who, blockTag),
+            iWTDOTCall.decimals()
+        ])
+        const result = {
+            'ACA': {
+              token: 'ACA',
+              balance: acaBalance.toString(),
+              formatBalance: formatUnits(acaBalance, acaDecimal),
+              decimal: acaDecimal
+            },
+            'DOT': {
+              token: 'DOT',
+              balance: dotBalance.toString(),
+              formatBalance: formatUnits(dotBalance, dotDecimal),
+              decimal: dotDecimal
+            },
+            'LDOT': {
+              token: 'LDOT', 
+              balance: ldotBalance.toString(),
+              formatBalance: formatUnits(ldotBalance, ldotDecimal),
+              decimal: ldotDecimal
+            },
+            'TDOT': {
+              token: 'TDOT',
+              balance: tdotBalance.toString(),
+              formatBalance: formatUnits(tdotBalance, tdotDecimal),
+              decimal: tdotDecimal
+            },
+            'LCDOT': {
+              token: 'LCDOT',
+              balance: lcdotBalance.toString(), 
+              formatBalance: formatUnits(lcdotBalance, lcdotDecimal),
+              decimal: lcdotDecimal
+            },
+            'WTDOT': {
+              token: 'WTDOT',
+              balance: wtdotBalance.toString(),
+              formatBalance: formatUnits(wtdotBalance, wtdotDecimal),
+              decimal: wtdotDecimal
+            }
+        }
+        console.table(result)
 
-    const shareType = await iStakingCall.shareTypes(poolId);
-    const convertInfo = await iStakingCall.convertInfos(poolId)
-    const iLiquidCrowdloan = new ILiquidCrowdloanCall(AliceSigner)
-    console.log("getRedeemCurrency", await iLiquidCrowdloan.getRedeemCurrency())
-    const shares = await iStakingCall.shares(poolId, AliceSigner.address)
-    const rewards = await iStakingCall.rewards(poolId, AliceSigner.address, ACA as string)
-    const rewardTypes = await iStakingCall.rewardTypes(poolId);
-    // const rewardsDeductionRates = await iStakingCall.rewardsDeductionRates(poolId, block);
-    const totalShares = await iStakingCall.totalShares(poolId);
+        return result
+    }
 
-    // // const tx = await (await iStakingCall.notifyRewardRule(poolId, ACA as string, '100000000000000', 10000)).wait()
-    // // console.log(tx.blockHash);
+    const getAllRewardsInfo = async (poolIndex: number, blockTag: BlockNumber = "latest") => {
+        console.log("------------start getAllRewardsInfo------------");
+        const rewardTypes = await iStakingCall.rewardTypes(poolIndex, blockTag)
+        let result = []
+        for (const type of rewardTypes) {
+            const { rewardRate, endTime, rewardRateAccumulated, lastAccumulatedTime } = await iStakingCall.rewardRules(poolId, type)
+            const rewardPerShare = await iStakingCall.rewardPerShare(poolIndex, type, blockTag)
+            const rewardInfo = {
+                poolIndex,
+                rewardType: type,
+                rewardRate: rewardRate.toString(),
+                endTime: endTime.toString(),
+                rewardRateAccumulated: rewardRateAccumulated.toString(),
+                lastAccumulatedTime: lastAccumulatedTime.toString(),
+                rewardPerShare: rewardPerShare.toString()
+            }
+            result.push(rewardInfo)
+            console.table(rewardInfo)
+        }
+        return result
+    }
 
-    // // const tx = await (await iStakingCall.setRewardsDeductionRate(poolId, "50000000000000000")).wait()
-    // // console.log(tx.blockHash);
+    const getPoolInfo = async (poolIndex: number, blockTag: BlockNumber = "latest") => {
+        console.log("------------start getPoolInfo------------");
+        const shareTypes = await iStakingCall.shareTypes(poolIndex)
+        const [
+            convertInfos, 
+            rewardsDeductionRates, 
+            lastTimeRewardApplicable, 
+            totalShares, 
+            pausedPoolStake, 
+            pausedPoolUnstake, 
+            pausedPoolClaimRewards
+        ] = await Promise.all([
+            iStakingCall.convertInfos(poolIndex, blockTag),
+            iStakingCall.rewardsDeductionRates(poolIndex, blockTag),
+            iStakingCall.lastTimeRewardApplicable(poolIndex, shareTypes, blockTag),
+            iStakingCall.totalShares(poolIndex, blockTag),
+            iStakingCall.shareTypes,
+            iStakingCall.pausedPoolOperations(poolIndex, Operation.Stake, blockTag),
+            iStakingCall.pausedPoolOperations(poolIndex, Operation.Unstake, blockTag),
+            iStakingCall.pausedPoolOperations(poolIndex, Operation.ClaimRewards, blockTag),
+        ])
+        const result = {
+            poolIndex,
+            shareTypes,
+            totalShares: totalShares.toString(),
+            convertedShareType: convertInfos.convertedShareType,
+            convertedExchangeRate: convertInfos.convertedExchangeRate.toString(),
+            rewardsDeductionRates: rewardsDeductionRates.toString(),
+            lastTimeRewardApplicable: lastTimeRewardApplicable.toString(),
+            pausedPoolStake, 
+            pausedPoolUnstake, 
+            pausedPoolClaimRewards
+        }
+        console.table(result)
+        return result
+    }
 
-    // // const tx = await (await iStakingCall.claimRewards(poolId)).wait()
-    // // console.log(`tx blockNumber: ${tx.blockNumber}, tx blockHash: ${tx.blockHash}, tx timestamp: ${tx.timestamp}`);
+    const getUserPoolInfo = async (poolIndex: number, who: UserAddress, blockTag: BlockNumber = "latest") => {
+        console.log("------------start getUserInfo------------");
+        const shares = await iStakingCall.shares(poolIndex, who, blockTag)
 
-    // const rewardRules = await iStakingCall.rewardRules(poolId, ACA as string, block)
-    // console.log((await provider.getBlock(421277)))
-    // console.log("rewardRate", rewardRules.rewardRate.toString());
-    // console.log("endTime", rewardRules.endTime.toString());
-    // console.log("rewardRateAccumulated", rewardRules.rewardRateAccumulated.toString());
-    // console.log("lastAccumulatedTime", rewardRules.lastAccumulatedTime.toString());
-    // console.log("paidAccumulatedRates", (await iStakingCall.paidAccumulatedRates(poolId, AliceSigner.address, ACA as string, block)).toString())
-    // console.log("earn", (await iStakingCall.earned(poolId, AliceSigner.address, ACA as string, block)).toString())
-    // console.log("rewardPerShare", (await iStakingCall.rewardPerShare(poolId, ACA as string, block)).toString())
-    // console.log("lastTimeRewardApplicable", (await iStakingCall.lastTimeRewardApplicable(poolId, ACA as string), block).toString())
-    // console.log("rewardsDeductionRates", rewardsDeductionRates.toString());
+        let result = []
+        const rewardTypes = await iStakingCall.rewardTypes(poolIndex, blockTag)
+        for (const type of rewardTypes) {
+            const [
+                paidAccumulatedRates,
+                earned,
+                rewards
+            ] = await Promise.all([
+                iStakingCall.paidAccumulatedRates(poolIndex, who, type, blockTag),
+                iStakingCall.earned(poolIndex, who, type, blockTag),
+                iStakingCall.rewards(poolIndex, who, type, blockTag)
+            ])
+            result.push({
+                poolIndex,
+                shares: shares.toString(),
+                rewardType: type,
+                paidAccumulatedRates: paidAccumulatedRates.toString(),
+                earned: earned.toString(),
+                rewards: rewards.toString()
+            })
+        }
+        console.table(result)
+        return result
+    }
 
+    const getPoolConfig = async (poolIndex: number, blockTag: BlockNumber = "latest") => {
+        console.log("------------start getPoolConfig------------");
+        const [
+            owner,
+            HOMA,
+            DOT,
+            LDOT,
+            LCDOT,
+            TDOT,
+            LIQUID_CROWDLOAN,
+            STABLE_ASSET,
+            MAX_REWARD_TYPES,
+            paused
+        ] = await Promise.all([
+            iStakingCall.owner(blockTag),
+            iStakingCall.HOMA(),
+            iStakingCall.DOT(),
+            iStakingCall.LDOT(),
+            iStakingCall.LCDOT(),
+            iStakingCall.TDOT(),
+            iStakingCall.LIQUID_CROWDLOAN(),
+            iStakingCall.STABLE_ASSET(),
+            iStakingCall.MAX_REWARD_TYPES(),
+            iStakingCall.paused(blockTag),
+        ])
 
-    console.log("=============================================================");
-    console.log("PoolIndex", (await iStakingCall.PoolIndex()).toString())
-    console.log(`Pool#${poolId}`);
-    console.log('shareTypes: ', shareType);
-    console.log('shares', shares.toString())
-    console.log('rewards', rewards);
-    console.log('totalShares: ', totalShares.toString());
-    console.log('convert token: ', convertInfo.convertedShareType);
-    console.log('convert exchange rate: ', convertInfo.convertedExchangeRate.toString());
-    console.log('rewardTypes: ', rewardTypes);
-    // console.log('rewardsDeductionRates: ', rewardsDeductionRates.toString());
-    console.log("=============================================================");
+        const result = {
+            poolIndex,
+            owner,
+            HOMA,
+            DOT,
+            LDOT,
+            LCDOT,
+            TDOT,
+            LIQUID_CROWDLOAN,
+            STABLE_ASSET,
+            MAX_REWARD_TYPES: MAX_REWARD_TYPES.toString(),
+            paused
+        }
 
-    // const acaContract = new ethers.Contract(ACA as string, erc20ABI, AliceSigner)
-    // const acaCall = new IERC20Call(acaContract)
-    // console.log((await acaCall.balanceOf(AliceSigner.address, 421176)).toString())
-    // console.log((await acaCall.balanceOf(AliceSigner.address, 421277)).toString())
-    // console.log((await acaCall.balanceOf(AliceSigner.address, 421278)).toString())
+        console.table(result)
+        return result
+    }
 
-    const iHomaCall = new IHomaCall(AliceSigner)
-    console.log("CommissionRate", (await iHomaCall.getCommissionRate()).toString())
-    console.log("EstimatedRewardRate", (await iHomaCall.getEstimatedRewardRate()).toString())
-    console.log("ExchangeRate", (await iHomaCall.getExchangeRate()).toString())
-    console.log("MatchFee", (await iHomaCall.getFastMatchFee()).toString())
+    const getBlockByTxHash = async (txHash: string) => {
+        const { blockNumber } = await provider.getTransaction(txHash) as { blockNumber : number }
+        const block = await provider.getBlock(blockNumber)
+        console.log(block);
+        
+        return block
+    }
+
+    await getAllBalanceInfo(AliceSigner.address)
+    await getAllRewardsInfo(poolId)
+    await getPoolInfo(poolId)
+    await getPoolConfig(poolId)
+    await getUserPoolInfo(poolId, AliceSigner.address)
+
+    await getBlockByTxHash("0x16bb3be3b89f7eb4e7607fda8d24135fe494aa5b7f150c1bb4956601c900e943")
+    // const shareType = await iStakingCall.shareTypes(poolId);
+    // // const iLiquidCrowdloan = new ILiquidCrowdloanCall(AliceSigner)
+    // // console.log("getRedeemCurrency", await iLiquidCrowdloan.getRedeemCurrency(block))
+    // // const rewards = await iStakingCall.rewards(poolId, AliceSigner.address, DOT as string, block)
+
+    // console.log("PoolIndex", (await iStakingCall.PoolIndex()).toString())
+
+    // const iHomaCall = new IHomaCall(AliceSigner)
+    // console.log("CommissionRate", (await iHomaCall.getCommissionRate(block)).toString())
+    // console.log("EstimatedRewardRate", (await iHomaCall.getEstimatedRewardRate(block)).toString())
+    // console.log("ExchangeRate", (await iHomaCall.getExchangeRate(block)).toString())
+    // console.log("MatchFee", (await iHomaCall.getFastMatchFee(block)).toString())
 
 
     console.log('completed')
