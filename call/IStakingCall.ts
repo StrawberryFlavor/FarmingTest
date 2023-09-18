@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
 import { AcalaJsonRpcProvider } from '@acala-network/eth-providers';
 import UpgradeableStakingLSDABI from '../UpgradeableStakingLSD.json'
-import { LIQUID_CROWDLOAN, PROXYCONTRACT } from "../utils/config";
-import { Operation, UserAddress, ContractAddress, Amount, BlockNumber } from "../utils/type";
+import { BLACK_HOLE, LIQUID_CROWDLOAN, PROXYCONTRACT } from "../utils/config";
+import { Operation, UserAddress, ContractAddress, Amount, BlockNumber, ConvertType } from "../utils/type";
 import { erc20ABI } from "./IERC20Call";
 
 const stakingIface = new ethers.utils.Interface(UpgradeableStakingLSDABI);
@@ -30,6 +30,10 @@ export class IStakingCall {
 
     async LDOT() {
         return await this.proxyContract.LDOT();
+    }
+
+    async WTDOT() {
+        return await this.proxyContract.WTDOT()
     }
 
     async LIQUID_CROWDLOAN() {
@@ -108,7 +112,7 @@ export class IStakingCall {
     }
 
     /**
-     * 获取池子的奖励利率
+     * 获取池子的灼烧利率
      * @param poolId 池子的index
      * @returns BigNumber
      */
@@ -213,8 +217,8 @@ export class IStakingCall {
         ]);
     }
 
-    async addPool(amount: Amount) {
-        const tx = await this.proxyContract.addPool(amount)
+    async addPool(tokenAddress: ContractAddress) {
+        const tx = await this.proxyContract.addPool(tokenAddress)
         await tx.wait()
 
         return tx
@@ -253,14 +257,14 @@ export class IStakingCall {
         return stakingIface.encodeFunctionData("unstake", [poolId, amount]);
     }
 
-    async convertLSDPool(poolId: number, convertType: ContractAddress) {
+    async convertLSDPool(poolId: number, convertType: ConvertType) {
         const tx = await this.proxyContract.convertLSDPool(poolId, convertType)
         await tx.wait()
 
         return tx
     }
 
-    convertLSDPoolEncode(poolId: number, convertType: ContractAddress) {
+    convertLSDPoolEncode(poolId: number, convertType: ConvertType) {
         return stakingIface.encodeFunctionData("convertLSDPool", [poolId, convertType]);
     }
 
@@ -296,17 +300,17 @@ export class IStakingCall {
         return stakingIface.encodeFunctionData("exit", [poolId]);
     }
 
-    async notifyRewardRule(
+    async updateRewardRule(
         poolId: number,
         rewardType: ContractAddress,
-        rewardAmountAdd: Amount,
-        rewardDuration: number
+        rewardRate: Amount,
+        endTime: number|string
     ) {
-        const tx = await this.proxyContract.notifyRewardRule(
+        const tx = await this.proxyContract.updateRewardRule(
             poolId,
             rewardType,
-            rewardAmountAdd,
-            rewardDuration,
+            rewardRate,
+            endTime,
         )
         await tx.wait()
 
@@ -318,21 +322,21 @@ export class IStakingCall {
      * 用户所得奖励可以通过rewards查询
      * @param poolId 池子Index
      * @param rewardType 奖励币种的地址
-     * @param rewardAmountAdd 奖励数量
-     * @param rewardDuration 奖励会持续多久
+     * @param rewardRate 每秒奖励
+     * @param endTime 奖励结束时间 秒戳
      * @returns 
      */
-    notifyRewardRuleEncode(
+    updateRewardRuleEncode(
         poolId: number,
         rewardType: ContractAddress,
-        rewardAmountAdd: Amount,
-        rewardDuration: number
+        rewardRate: Amount,
+        endTime: number|string
     ) {
-        return stakingIface.encodeFunctionData("notifyRewardRule", [
+        return stakingIface.encodeFunctionData("updateRewardRule", [
             poolId,
             rewardType,
-            rewardAmountAdd,
-            rewardDuration,
+            rewardRate,
+            endTime,
         ]);
     }
 

@@ -10,18 +10,26 @@
     "@acala-network/sdk-core": "^4.1.8-6",
     "@acala-network/sdk-homa": "^4.1.8-6",
     "@acala-network/sdk-swap": "^4.1.8-6",
-    "chai": "^4.3.7",
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
     "dotenv": "^16.0.3",
+    "ethereum-waffle": "^4.0.10",
     "ethers": "5.4.0"
   },
   "devDependencies": {
     "@polkadot/ts": "^0.3.59",
-    "@types/chai": "^4.3.5",
     "@types/jest": "^26.0.13",
     "@types/lodash": "^4.14.161",
+    "chai": "^4.3.7",
     "jest": "^26.4.2",
+    "mocha": "^10.2.0",
     "ts-jest": "^26.3.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.2"
+  },
+  "scripts": {
+    "test": "NODE_ENV=test mocha",
+    "stakeLSD": "mocha ./testCase/stakeLSDCase.test.ts",
+    "wrappedTDOT": "mocha ./testCase/wrappedTDOTCase.test.ts"
   }
 }

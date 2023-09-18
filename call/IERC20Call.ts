@@ -15,9 +15,13 @@ export const erc20ABI = [
 
     'function totalSupply() view returns (uint256)',
 
+    'function allowance(address owner, address spender) view returns (uint256)',
+
     'function transfer(address, uint256) returns (bool)',
 
     'function approve(address spender, uint256 amount) returns (bool)',
+
+    'function mint(address account, uint256 amount) returns (bool)'
 ];
 
 const erc20Iface = new ethers.utils.Interface(erc20ABI);
@@ -52,8 +56,12 @@ export class IERC20Call {
         return await this.erc20Contract.balanceOf(who, { blockTag })
     }
 
-    async transfer(who: UserAddress, amount: Amount) {
-        const tx = await this.erc20Contract.balanceOf(who, amount)
+    async allowance(owner: UserAddress, spender: ContractAddress, blockTag: BlockNumber = "latest") {
+        return await this.erc20Contract.allowance(owner, spender, { blockTag })
+    }
+
+    async transfer(to: UserAddress, amount: Amount) {
+        const tx = await this.erc20Contract.transfer(to, amount)
         await tx.wait()
 
         return tx
@@ -61,5 +69,19 @@ export class IERC20Call {
 
     transferEncode(who: UserAddress, amount: Amount) {
         return erc20Iface.encodeFunctionData("transfer", [who, amount]);
+    }
+
+    async approve(spender: ContractAddress, amount: Amount) {
+        const tx = await this.erc20Contract.approve(spender, amount)
+        await tx.wait()
+
+        return tx
+    }
+
+    async mint(who: UserAddress, amount: Amount) {
+        const tx = await this.erc20Contract.mint(who, amount)
+        await tx.wait()
+
+        return tx
     }
 }
